@@ -1,0 +1,139 @@
+version: "3.1"
+services:
+  discovery-server:
+    image: discovery-server
+    container_name: discovery-server
+    ports:
+      - 8761:8761
+    networks:
+      - microservices-ecommerce-example
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    ports:
+      - 8080:8080
+    networks:
+      - microservices-ecommerce-example
+    depends_on:
+      - discovery-server
+    command:
+      [
+        "dockerize",
+        "-wait",
+        "http://discovery-server:8761",
+        "-timeout",
+        "60s",
+        "java",
+        "-jar",
+        "-Dspring.profiles.active=docker",
+        "/api-gateway.jar",
+      ]
+  products-microservice01:
+    image: products-microservice
+    container_name: products-microservice01
+    ports:
+      - 8081:8080
+    networks:
+      - microservices-ecommerce-example
+    depends_on:
+      - discovery-server
+      - api-gateway
+    command:
+      [
+        "dockerize",
+        "-wait",
+        "http://discovery-server:8761",
+        "-wait",
+        "http://api-gateway:8080/actuator/health",
+        "-timeout",
+        "60s",
+        "java",
+        "-jar",
+        "-Dspring.profiles.active=docker",
+        "/products-microservice.jar",
+      ]
+  products-microservice02:
+    image: products-microservice
+    container_name: products-microservice02
+    ports:
+      - 8082:8080
+    networks:
+      - microservices-ecommerce-example
+    depends_on:
+      - discovery-server
+      - api-gateway
+    command:
+      [
+        "dockerize",
+        "-wait",
+        "http://discovery-server:8761",
+        "-wait",
+        "http://api-gateway:8080/actuator/health",
+        "-timeout",
+        "60s",
+        "java",
+        "-jar",
+        "-Dspring.profiles.active=docker",
+        "/products-microservice.jar",
+      ]
+  users-microservice:
+    image: users-microservice
+    container_name: users-microservice
+    ports:
+      - 8083:8080
+    networks:
+      - microservices-ecommerce-example
+    depends_on:
+      - discovery-server
+      - api-gateway
+    command:
+      [
+        "dockerize",
+        "-wait",
+        "http://discovery-server:8761",
+        "-wait",
+        "http://api-gateway:8080/actuator/health",
+        "-timeout",
+        "60s",
+        "java",
+        "-jar",
+        "-Dspring.profiles.active=docker",
+        "/users-microservice.jar",
+      ]
+  orders-microservice:
+    image: orders-microservice
+    container_name: orders-microservice
+    ports:
+      - 8084:8080
+    networks:
+      - microservices-ecommerce-example
+    depends_on:
+      - discovery-server
+      - api-gateway
+      - products-microservice01
+      - products-microservice02
+      - users-microservice
+    command:
+      [
+        "dockerize",
+        "-wait",
+        "http://discovery-server:8761",
+        "-wait",
+        "http://api-gateway:8080/actuator/health",
+        "-wait",
+        "http://products-microservice01:8080/actuator/health",
+        "-wait",
+        "http://products-microservice01:8080/actuator/health",
+        "-wait",
+        "http://users-microservice:8080/actuator/health",
+        "-timeout",
+        "120s",
+        "java",
+        "-jar",
+        "-Dspring.profiles.active=docker",
+        "/orders-microservice.jar",
+      ]
+
+networks:
+  microservices-ecommerce-example:
+    driver: bridge

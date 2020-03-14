@@ -37,7 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                     .antMatchers(UserController.BASE_URL + "/**").permitAll()
                     .antMatchers(AuthenticationController.BASE_URL + "/**").permitAll()
-                    .antMatchers("/health").permitAll()
+                    .antMatchers("/actuator/**").permitAll()
                     // protect any other resources
                     .anyRequest().authenticated();
 

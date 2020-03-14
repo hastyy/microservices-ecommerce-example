@@ -1,0 +1,1 @@
+eureka.client.defaultZone: http://discovery-server:${server.port}/eureka/
